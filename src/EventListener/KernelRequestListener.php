@@ -38,9 +38,9 @@ class KernelRequestListener
     public function onKernelRequest(RequestEvent $event)
     {
         $request = $event->getRequest()->getRealMethod();
+
         if ($request !== 'POST') {
             $event->setResponse(new Response('forbidden - accès interdit!', 403));
         }
-        return $event;
     }
 }
