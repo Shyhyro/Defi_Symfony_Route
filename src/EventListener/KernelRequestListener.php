@@ -9,38 +9,30 @@ use Symfony\Component\HttpKernel\Event\RequestEvent;
 class KernelRequestListener
 {
     /**
-     * Catch all exceptions.
-     * @param ExceptionEvent $event
+     * Event kernel.request
+     * @param RequestEvent $event
      * @return void
      */
-    public function onKernelException(ExceptionEvent $event)
-    {
-        // Get the exception object from the received event.
-        $exception = $event->getThrowable();
-        $message = sprintf(
-            'L\'erreur est: %s avec le code d\'erreur: %s',
-            $exception->getMessage(),
-            $exception->getCode()
-        );
-
-        // Customize your response object to display the exception details.
-        $response = new Response();
-        $response->setContent("
-            <h1>Une erreur est survenue!</h1>
-            <h2>Contenu de l'erreur</h2>
-            <div>$message</div>
-        ");
-
-        // Send the modified response object to display the exception details.
-        $event->setResponse($response);
-    }
-
     public function onKernelRequest(RequestEvent $event)
     {
         $request = $event->getRequest()->getRealMethod();
 
         if ($request !== 'POST') {
-            $event->setResponse(new Response('forbidden - accès interdit!', 403));
+            $event->setResponse(new Response('<h1>Type de requête non autorisée par le kernel</h1>', 403));
+        }
+    }
+
+    /**
+     * Event kernel.exception
+     * @param ExceptionEvent $event
+     * @return void
+     */
+    public function onKernelException(ExceptionEvent $event)
+    {
+        $request = $event->getRequest()->getRealMethod();
+
+        if ($request !== 'POST') {
+            $event->setResponse(new Response('<h1>Type de requête non autorisée par le kernel</h1>', 403));
         }
     }
 }

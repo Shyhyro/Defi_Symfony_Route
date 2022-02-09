@@ -2,13 +2,11 @@
 
 namespace App\EventListener;
 
-use App\Kernel;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Event\ExceptionEvent;
 use Symfony\Component\HttpKernel\Event\FinishRequestEvent;
-use Symfony\Component\HttpKernel\Event\RequestEvent;
 use Symfony\Component\HttpKernel\KernelEvents;
 
 class KernelEventSubscriber implements EventSubscriberInterface
@@ -54,20 +52,6 @@ class KernelEventSubscriber implements EventSubscriberInterface
     }
 
     /**
-     * Event kernel.request
-     * @param RequestEvent $event
-     * @return void
-     */
-    public function onKernelRequest(RequestEvent $event)
-    {
-        $request = $event->getRequest()->getRealMethod();
-
-        if ($request !== 'POST') {
-            $event->setResponse(new Response('forbidden - accès interdit!', 403));
-        }
-    }
-
-    /**
      * Only log exception.
      * @param ExceptionEvent $event
      * @return void
@@ -91,6 +75,25 @@ class KernelEventSubscriber implements EventSubscriberInterface
 
         $ipAddress = $event->getRequest()->getClientIp();
         $this->logger->info("Request finished {kernel.finish_request::logIpAddress()}", ['Request from' => $ipAddress]);
+    }
+
+    /**
+     * Log error on request finished
+     * @param FinishRequestEvent $event
+     * @return void
+     */
+    public function logError(FinishRequestEvent $event)
+    {
+        if (!$event->isMainRequest()){
+            return;
+        }
+
+        $request = $event->getRequest()->getRealMethod();
+        $ipAddress = $event->getRequest()->getClientIp();
+
+        if ($request !== 'POST') {
+            $this->logger->info("Request finished {kernel.finish_request::logError()}", ['Request from' => $ipAddress]);
+        }
     }
 
 }
